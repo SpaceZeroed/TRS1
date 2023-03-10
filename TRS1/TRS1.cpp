@@ -8,95 +8,110 @@
 #include <string>
 namespace var9
 {
-    double m = 6.65*pow(10,-27);
-    double x0 = 0;
-    double v0 = 1;
-    double U(double x)
-    {
-        return(6*pow(10,-17) *x*x* sinh(x * x));
-    }
-    double dudx(double x)
-    {
-        return(6*pow(10,-17) * (2 * x*sinh(x*x)+2*pow(x,3)*cosh(x*x)));
-    }
-    
+	double m = 6.65 * pow(10, -27);
+	double x0 = 0;
+	double v0 = 1;
+	double U(double x)
+	{
+		return(6 * pow(10, -17) * x * x * sinh(x * x));
+	}
+	double f(double x)
+	{
+		return(x * sinh(x * x) + 2 * pow(x, 3) * cosh(x * x));
+	}
+	double alpha = 1;
+	double betta = -12. / 665;
 }
 using namespace std;
-double dxdt(double v)
-{
-    return v;
-}
+//double dxdt(double v)
+//{
+//    return v;
+//}
 
-double dvdt(double x) // dont understand why i need x
+
+vector<tuple<double, double, double>> EilerMeth(double h)
 {
-    using namespace var9;
-    return(-dudx(x) / m);
-}
-vector<tuple<double, double, double>> EilerFor2(double h)
-{
-    using namespace var9;
-    double t = 0;
-    // t is first, x is second 
-    vector<pair<double, double>> tx;
-    // t is first, v is second
-    vector<pair<double, double>> tv;
-    // finding v(t) first, then x(t)
-    tv.push_back(make_pair(t, v0));
-    tx.push_back(make_pair(t, x0));
-    t += h*pow(10,-6);
-    while (t < 1)
-    {
-        double tempV = 0;
-        double tempX = 0;
-        tempV = tv[tv.size() - 1].second + h * dvdt(tx[tx.size() - 1].second);
-        tempX = tx[tx.size() - 1].second + h * dxdt(tv[tv.size() - 1].second);
-        t += h;
-        tv.push_back(make_pair(t, tempV));
-        tx.push_back(make_pair(t, tempX));
-    }
-    // tuple for tvx
-    vector<tuple<double, double, double>> tvx;
-    for (int it = 0; it < tv.size(); it++)
-    {
-        tvx.push_back(make_tuple(tv[it].first, tv[it].second, tx[it].second));
-    }
-    return tvx;
+	using namespace var9;
+	double t = 0;
+	vector<tuple<double, double, double>> tvx;
+	tvx.push_back(make_tuple(t, v0, x0));
+	while (t < 10)
+	{
+		double tempV, tempX;
+		double Xn, Vn, Tn;
+		tie(Tn, Vn, Xn) = tvx[tvx.size() - 1];
+		tempV = Vn + h * betta * f(Xn);
+		tempX = Xn + h * alpha * Vn;
+		t += h;
+		tvx.push_back(make_tuple(t, tempV, tempX));
+	}
+	return tvx;
 }
 void Outcmd(vector<tuple<double, double, double>> tvx)
 {
-    cout << "table of contents: t v x columns\n";
-    for (int i = 0; i < tvx.size(); i++)
-    {
-        double tempT, tempX, tempV;
-        tie(tempT, tempV, tempX) = tvx[i];
-        //tempV=tempV*pow(10,-40);
-        //tempX=tempX*pow(10,-40);
-        cout << tempT << " " << tempV << " " << tempX << endl;
-    }
+	cout << "table of contents: t v x columns\n";
+	for (int i = 0; i < tvx.size(); i++)
+	{
+		double tempT, tempX, tempV;
+		tie(tempT, tempV, tempX) = tvx[i];
+		cout << tempT << " " << tempV << " " << tempX << endl;
+	}
 }
 void Outfile(vector<tuple<double, double, double>> tvx, double h)
 {
-    h = h * 100;
-    string filename = "Ex1His"+to_string(int(h))+".txt";
-    ofstream output(filename);
-    for (int i = 0; i < tvx.size(); i++)
-    {
-        double tempT, tempX, tempV;
-        tie(tempT, tempV, tempX) = tvx[i];
-        output << tempT << " " << tempV << " " << tempX << endl;
+	string filename = "Ex1His_" + to_string(float(h)) + ".txt";
+	string filename2 = "Tvex1His_" + to_string(float(h)) + ".txt";
+	string filename3 = "Txex1His_" + to_string(float(h)) + ".txt";
+	ofstream output(filename);
+	ofstream output2(filename2);
+	ofstream output3(filename3);
+	for (int i = 0; i < tvx.size(); i++)
+	{
+		double tempT, tempX, tempV;
+		tie(tempT, tempV, tempX) = tvx[i];
+		output << tempT << " " << tempV << " " << tempX << endl;
+		output2 << tempT << " " << tempV << endl;
+		output3 << tempT << " " << tempX << endl;
 
-    }
-    output.close();
+	}
+	output.close();
+	output2.close();
+	output3.close();
 }
+vector<tuple<double, double, double>> EilerRungeMeth(double h)
+{
+	double q = 0.5;
+	double h1 = 0.001;
+	double h2 = h1 * q;
+	double p = 1;
+	vector<tuple<double, double, double>> tvx1 = EilerMeth(h1);
+	vector<tuple<double, double, double>> tvx2 = EilerMeth(h2);
+	vector<tuple<double, double, double>> tvx;
+	for (int i = 1; i < tvx1.size() - 1; i++)
+	{
+		double X1, X2, V1, V2, T2, T1;
+		tie(T1, V1, X1) = tvx1[i];
+		tie(T2, V2, X2) = tvx2[i * 2];
+		tvx.push_back(make_tuple(T1,V1 + (V1 - V2) / (2 - 1), 2 * X1 - X2));
+	}
+
+}
+vector<tuple<double, double, double>> AdamsMeth(double h)
+{
+	double h = 0.001;
+	vector<tuple<double, double, double>> tvx = EilerMeth(h);
+
+}
+
 int main()
 {
-    using namespace var9;
-    vector<tuple<double, double, double>> tvx;
-    double h = 0.1;
-    tvx = EilerFor2(h);
-    Outcmd(tvx);
-    Outfile(tvx, h);
-    return 0;
+	using namespace var9;
+	vector<tuple<double, double, double>> tvx;
+	double h = 0.001;
+	tvx = EilerMeth(h);
+	//Outcmd(tvx);
+	Outfile(tvx, h);
+	return 0;
 }
 // Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
 // Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
