@@ -101,7 +101,7 @@ vector<tuple<double, double, double>> AdamsMethod(double h)
 	double t = 0;
 	tvx.push_back(make_tuple(t, v0, x0));
 	tvx.push_back(make_tuple(t + h, v0 + h * betta * f(x0), x0 + h * alpha * v0));
-	while (t < 5)
+	while (t < 10)
 	{
 		double tempV, tempX;
 		double Xn, Vn, Tn, Tn_1, Vn_1, Xn_1;
@@ -122,9 +122,9 @@ int main()
 	using namespace var9;
 	vector<tuple<double, double, double>> tvx;
 	double h = 0.001;
-	//tvx = EilerMeth(h); 
+	tvx = EilerMeth(h);
 	tvx = AdamsMethod(h);
-	//Outcmd(tvx); 
+	//Outcmd(tvx);
 	Outfile(tvx, h);
 	return 0;
 }
