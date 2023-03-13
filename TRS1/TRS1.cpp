@@ -55,11 +55,11 @@ void Outcmd(vector<tuple<double, double, double>> tvx)
 		cout << tempT << " " << tempV << " " << tempX << endl;
 	}
 }
-void Outfile(vector<tuple<double, double, double>> tvx, double h)
+void Outfile(string Name, vector<tuple<double, double, double>> tvx, double h)
 {
-	string filename = "Ex1His_" + to_string(float(h)) + ".txt";
-	string filename2 = "Tvex1His_" + to_string(float(h)) + ".txt";
-	string filename3 = "Txex1His_" + to_string(float(h)) + ".txt";
+	string filename = "Ex1His_" + Name + to_string(float(h)) + ".txt";
+	string filename2 = "Tvex1His_" + Name + to_string(float(h)) + ".txt";
+	string filename3 = "Txex1His_" + Name + to_string(float(h)) + ".txt";
 	ofstream output(filename);
 	ofstream output2(filename2);
 	ofstream output3(filename3);
@@ -125,6 +125,6 @@ int main()
 	//tvx = EilerMeth(h); 
 	tvx = AdamsMethod(h);
 	//Outcmd(tvx); 
-	Outfile(tvx, h);
+	Outfile("AdamsMethod", tvx, h);
 	return 0;
 }
