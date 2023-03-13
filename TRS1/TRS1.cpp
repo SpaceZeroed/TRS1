@@ -110,6 +110,29 @@ vector<tuple<double, double, double>> AdamsMethod(double h)
 		tie(Tn_1, Vn_1, Xn_1) = tvx[tvx.size() - 2];
 
 		tempV = Vn + h * betta * f(Xn);
+		tempX = Xn + (3 * Vn - f(Vn_1)) * h / 2;
+		t += h;
+		tvx.push_back(make_tuple(t, tempV, tempX));
+	}
+	return tvx;
+}
+
+vector<tuple<double, double, double>> AdamsMethod(double h)
+{
+	using namespace var9;
+	vector<tuple<double, double, double>> tvx;
+	double t = 0;
+	tvx.push_back(make_tuple(t, v0, x0));
+	tvx.push_back(make_tuple(t + h, v0 + h * betta * f(x0), x0 + h * alpha * v0));
+	while (t < 10)
+	{
+		double tempV, tempX;
+		double Xn, Vn, Tn, Tn_1, Vn_1, Xn_1;
+
+		tie(Tn, Vn, Xn) = tvx[tvx.size() - 1];
+		tie(Tn_1, Vn_1, Xn_1) = tvx[tvx.size() - 2];
+
+		tempV = Vn + h * betta * f(Xn);
 		tempX = Xn + (3 * f(Xn) - f(Xn_1)) * h / 2;
 		t += h;
 		tvx.push_back(make_tuple(t, tempV, tempX));
@@ -122,7 +145,7 @@ int main()
 	using namespace var9;
 	vector<tuple<double, double, double>> tvx;
 	double h = 0.001;
-	tvx = EilerMeth(h);
+	//tvx = EilerMeth(h);
 	tvx = AdamsMethod(h);
 	//Outcmd(tvx); 
 	Outfile("AdamsMethod", tvx, h);
