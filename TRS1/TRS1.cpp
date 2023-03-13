@@ -134,10 +134,18 @@ vector<tuple<double, double, double>> RungeKuttMethod(double h)
 	{
 		double tempV, tempX;
 		t += h;
-		tempX = Xn + (k1 + 2 * k2 + 2 * k3 + k4) / 6;
-		tempV = Vn + (m1 + 2 * m2 + 2 * m3 + m4) / 6;
+		tempX = Xn + alpha*(k1 + 2 * k2 + 2 * k3 + k4) / 6;
+		tempV = Vn + betta*(m1 + 2 * m2 + 2 * m3 + m4) / 6;
 		tvx.push_back(make_tuple(t, tempV, tempX));
 		tie(Tn, Vn, Xn) = tvx[tvx.size() - 1];
+		k1 = Vn * h;
+		m1 = f(Xn) * h;
+		k2 = (Vn + m1 / 2) * h;
+		m2 = f(Xn + k1 / 2) * h;
+		k3 = (Vn + m2 / 2) * h;
+		m3 = f(Xn + k2 / 2) * h;
+		k4 = (Vn + m3) * h;
+		m4 = f(Xn + k3) * h;
 	}
 	return tvx;
 }
