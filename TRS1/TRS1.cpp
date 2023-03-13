@@ -8,6 +8,7 @@
 #include <string> 
 namespace var9
 {
+	// Cauchy's problem data
 	double m = 6.65 * pow(10, -27);
 	double x0 = 0;
 	double v0 = 1;
@@ -21,6 +22,19 @@ namespace var9
 	}
 	double alpha = 1;
 	double betta = -12. / 665;
+	// Boundary value's problem data
+	double a0 = 0;
+	double a1 = 1;
+	double b0 = 1;
+	double b1 = 1;
+	double p = -2;
+	double q = 0;
+	double bcf(double x)
+	{
+		return exp(x) * (x * x + x - 3);
+	}
+	double A = 2;
+	double B = 2;
 }
 using namespace std;
 using namespace var9;
@@ -76,10 +90,10 @@ void Outfile(string Name, vector<tuple<double, double, double>> tvx, double h)
 }
 vector<tuple<double, double, double>> EilerRungeMeth(double h)
 {
-	double q = 0.5;
+	double q1 = 0.5;
 	double h1 = 0.001;
-	double h2 = h1 * q;
-	double p = 1;
+	double h2 = h1 * q1;
+	double p1 = 1;
 	vector<tuple<double, double, double>> tvx1 = EilerMeth(h1);
 	vector<tuple<double, double, double>> tvx2 = EilerMeth(h2);
 	vector<tuple<double, double, double>> tvx;
@@ -148,6 +162,13 @@ vector<tuple<double, double, double>> RungeKuttMethod(double h)
 		m4 = f(Xn + k3) * h;
 	}
 	return tvx;
+}
+// functions for boundary problem
+
+vector<tuple<double, double, double>> FiniteDifferenceMethod(double h,double a,double b)
+{
+	int n = int((b - a) / h);
+
 }
 int main()
 {
