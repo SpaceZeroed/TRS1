@@ -1,11 +1,11 @@
 ﻿// TRS1.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
-#include <iostream>
-#include <math.h>
-#include <vector>
-#include <tuple>
-#include <fstream>
-#include <string>
+// 
+#include <iostream> 
+#include <math.h> 
+#include <vector> 
+#include <tuple> 
+#include <fstream> 
+#include <string> 
 namespace var9
 {
 	double m = 6.65 * pow(10, -27);
@@ -23,12 +23,10 @@ namespace var9
 	double betta = -12. / 665;
 }
 using namespace std;
-//double dxdt(double v)
-//{
-//    return v;
-//}
-
-
+//double dxdt(double v) 
+//{ 
+//    return v; 
+//} 
 vector<tuple<double, double, double>> EilerMeth(double h)
 {
 	using namespace var9;
@@ -92,15 +90,31 @@ vector<tuple<double, double, double>> EilerRungeMeth(double h)
 		double X1, X2, V1, V2, T2, T1;
 		tie(T1, V1, X1) = tvx1[i];
 		tie(T2, V2, X2) = tvx2[i * 2];
-		tvx.push_back(make_tuple(T1,V1 + (V1 - V2) / (2 - 1), 2 * X1 - X2));
+		tvx.push_back(make_tuple(T1, V1 + (V1 - V2) / (2 - 1), 2 * X1 - X2));
 	}
-
+	return tvx;
 }
-vector<tuple<double, double, double>> AdamsMeth(double h)
+vector<tuple<double, double, double>> AdamsMethod(double h)
 {
-	double h = 0.001;
-	vector<tuple<double, double, double>> tvx = EilerMeth(h);
+	using namespace var9;
+	vector<tuple<double, double, double>> tvx;
+	double t = 0;
+	tvx.push_back(make_tuple(t, v0, x0));
+	tvx.push_back(make_tuple(t + h, v0 + h * betta * f(x0), x0 + h * alpha * v0));
+	while (t < 5)
+	{
+		double tempV, tempX;
+		double Xn, Vn, Tn, Tn_1, Vn_1, Xn_1;
 
+		tie(Tn, Vn, Xn) = tvx[tvx.size() - 1];
+		tie(Tn_1, Vn_1, Xn_1) = tvx[tvx.size() - 2];
+
+		tempV = Vn + h * betta * f(Xn);
+		tempX = Xn + (3 * f(Xn) - f(Xn_1)) * h / 2;
+		t += h;
+		tvx.push_back(make_tuple(t, tempV, tempX));
+	}
+	return tvx;
 }
 
 int main()
@@ -108,18 +122,9 @@ int main()
 	using namespace var9;
 	vector<tuple<double, double, double>> tvx;
 	double h = 0.001;
-	tvx = EilerMeth(h);
-	//Outcmd(tvx);
+	//tvx = EilerMeth(h); 
+	tvx = AdamsMethod(h);
+	//Outcmd(tvx); 
 	Outfile(tvx, h);
 	return 0;
 }
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
-
-// Советы по началу работы 
-//   1. В окне обозревателя решений можно добавлять файлы и управлять ими.
-//   2. В окне Team Explorer можно подключиться к системе управления версиями.
-//   3. В окне "Выходные данные" можно просматривать выходные данные сборки и другие сообщения.
-//   4. В окне "Список ошибок" можно просматривать ошибки.
-//   5. Последовательно выберите пункты меню "Проект" > "Добавить новый элемент", чтобы создать файлы кода, или "Проект" > "Добавить существующий элемент", чтобы добавить в проект существующие файлы кода.
-//   6. Чтобы снова открыть этот проект позже, выберите пункты меню "Файл" > "Открыть" > "Проект" и выберите SLN-файл.
