@@ -104,28 +104,48 @@ vector<tuple<double, double, double>> AdamsMethod(double h)
 	while (t < 10)
 	{
 		double tempV, tempX;
-		double Xn, Vn, Tn, Tn_1, Vn_1, Xn_1;
+		double xn, vn, tn, tn_1,vn_1, xn_1;
 
-		tie(Tn, Vn, Xn) = tvx[tvx.size() - 1];
-		tie(Tn_1, Vn_1, Xn_1) = tvx[tvx.size() - 2];
+		tie(tn, vn, xn) = tvx[tvx.size() - 1];
+		tie(tn_1, vn_1, xn_1) = tvx[tvx.size() - 2];
 
-		tempV = Vn + h * betta * (3 * f(Xn) - f(Xn_1)) / 2;
-		tempX = Xn + alpha * (3 * Vn - Vn_1) * h / 2;
+		tempV = vn + h * betta * (3 * f(xn) - f(xn_1)) / 2;
+		tempX = xn + alpha * (3 * vn - vn_1) * h / 2;
 		t += h;
 		tvx.push_back(make_tuple(t, tempV, tempX));
 	}
 	return tvx;
 }
-
+vector<tuple<double, double, double>> RungeKutty(double h)
+{
+	using namespace var9;
+	vector<tuple<double, double, double>> tvx;
+	double t = 0;
+	tvx.push_back(make_tuple(t, v0, x0));
+	while (t < 10)
+	{
+		double tempV, tempX;
+		double xn, vn, tn, k_11, k_12, k_13, k_14, k_21, k_22, k_23, k_24;
+		tie(tn, vn, xn) = tvx[tvx.size() - 1];
+		k_11 = vn; k_12 = vn + k_11 * h; k_13 = vn + k_12 * h; k_14 = vn + k_13 * h;
+		k_21 = alpha * f(xn); k_22 = alpha * f(xn + k_21 * h / 2); k_23 = alpha * f(xn + k_22 * h / 2); k_24 = alpha * f(xn + k_23 * h);
+		tempX = xn + (k_11 + 2 * k_12 + 2 * k_13 + k_14) * h / 6;
+		tempV = vn + (k_21 + 2 * k_22 + 2 * k_23 + k_24) * h / 6;
+		t += h;
+		tvx.push_back(make_tuple(t, tempV, tempX));
+	}
+	return tvx;
+}
 int main()
 {
 	using namespace var9;
 	vector<tuple<double, double, double>> tvx;
 	double h = 0.001;
 	//tvx = EilerMeth(h);
-	tvx = AdamsMethod(h);
+	//tvx = AdamsMethod(h);
+	tvx = RungeKutty(h);
 	//Outcmd(tvx);
 	//Outfile("EilerMethod", tvx, h);
-	Outfile("AdamsMethod", tvx, h);
+	Outfile("RungeKutty", tvx, h);
 	return 0;
 }
