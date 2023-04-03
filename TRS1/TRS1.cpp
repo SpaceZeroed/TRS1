@@ -4,7 +4,8 @@
 #include <math.h> 
 #include <vector> 
 #include <tuple> 
-#include <fstream> 
+#include <fstream>
+#include <iomanip>
 #include <string> 
 namespace var9
 {
@@ -29,7 +30,7 @@ namespace var9
 	double b1 = 1;
 	double p = -2;
 	double q = 0;
-	double bcf(double x)
+	double boundcondf(double x)
 	{
 		return exp(x) * (x * x + x - 3);
 	}
@@ -116,7 +117,7 @@ vector<tuple<double, double, double>> AdamsMethod(double h)
 	while (t < 10)
 	{
 		double tempV, tempX;
-		double xn, vn, tn, tn_1,vn_1, xn_1;
+		double xn, vn, tn, tn_1, vn_1, xn_1;
 
 		tie(tn, vn, xn) = tvx[tvx.size() - 1];
 		tie(tn_1, vn_1, xn_1) = tvx[tvx.size() - 2];
@@ -164,12 +165,12 @@ vector<tuple<double, double, double>> RungeKuttMethod(double h)
 	double m3 = f(Xn + k2 / 2) * h;
 	double k4 = (Vn + m3) * h;
 	double m4 = f(Xn + k3) * h;
-	while (t<10)
+	while (t < 10)
 	{
 		double tempV, tempX;
 		t += h;
-		tempX = Xn + alpha*(k1 + 2 * k2 + 2 * k3 + k4) / 6;
-		tempV = Vn + betta*(m1 + 2 * m2 + 2 * m3 + m4) / 6;
+		tempX = Xn + alpha * (k1 + 2 * k2 + 2 * k3 + k4) / 6;
+		tempV = Vn + betta * (m1 + 2 * m2 + 2 * m3 + m4) / 6;
 		tvx.push_back(make_tuple(t, tempV, tempX));
 		tie(Tn, Vn, Xn) = tvx[tvx.size() - 1];
 		k1 = Vn * h;
@@ -184,17 +185,85 @@ vector<tuple<double, double, double>> RungeKuttMethod(double h)
 	return tvx;
 }
 // functions for boundary problem
-
-vector<tuple<double, double, double>> FiniteDifferenceMethod(double h,double a,double b)
+void PrintMatrix(vector<vector<double>> Matrix)
 {
-	int n = int((b - a) / h);
-
+	cout << fixed << std::setprecision(4);
+	cout << "-------------------------------------------------------------" << endl;
+	for (int i = 0; i < Matrix.size(); i++)
+	{
+		for (int j = 0; j < Matrix[i].size(); j++)
+		{
+			cout << setw(5) << Matrix[i][j] << "  ";
+		}
+		cout << endl;
+	}
+	cout << "-------------------------------------------------------------" << endl;
 }
+
+vector <double> Diag3Prog(vector<vector<double>> matrix, vector<double> f)
+{
+	int n = f.size();
+
+	vector <double> x(n + 1, { 0 });
+	vector <double> psi(n + 1, { 0 });
+	vector <double> ksi(n + 1, { 0 });
+
+	double b = -matrix[0][0]; double c = matrix[0][1];
+	psi[1] = -c / (0 * psi[0] - b);
+	ksi[1] = (f[0] - 0 * ksi[0]) / (0 * psi[0] - b);
+
+	for (int i = 1; i < n - 2; i++) // прямой ход 
+	{
+		double a = matrix[i][i - 1]; double b = -matrix[i][i]; double c = matrix[i][i + 1];
+		psi[i + 1] = -c / (a * psi[i] - b);
+		ksi[i + 1] = (f[i] - a * ksi[i]) / (a * psi[i] - b);
+	}
+	for (int i = n; i > 0; i--) // обратный ход 
+	{
+		x[i - 1] = psi[i] * x[i] + ksi[i];
+	}
+	return x;
+}
+vector<pair<double, double>> FiniteDifferenceMethod(double h, double a, double b)
+{
+	int n_big = int((b - a) / h);
+	vector<pair<double, double>> tx;
+	vector<vector<double>> matrix_prog;
+	matrix_prog.resize(n_big);
+	for (int i = 0; i < n_big; i++)
+		matrix_prog[i].resize(n_big);
+
+	matrix_prog[0][0] = -1 / h;
+	matrix_prog[0][1] = 1 / h;
+	for (int i = 1; i <= n_big - 2; i++)
+	{
+		matrix_prog[i][i - 1] = 2 - h * p;
+		matrix_prog[i][i] = -4 + q * 2 * h * h;
+		matrix_prog[i][i + 1] = 2 + h * p;
+	}
+	matrix_prog[n_big - 1][n_big - 1] = 1 / h + 1;
+	matrix_prog[n_big - 1][n_big - 2] = -1 / h;
+
+	vector<double> f;
+	f.resize(n_big);
+	f[0] = 2; f[n_big - 1] = 2;
+	for (int i = 1; i < n_big - 1; i++)
+	{
+		f[i] = boundcondf(a + i * h);
+	}
+	vector<double> u = Diag3Prog(matrix_prog, f);
+	for (int i = 0; i < n_big; i++)
+		tx.push_back(make_pair(a + h * i, u[i]));
+	//PrintMatrix(matrix_prog);
+	return tx;
+}
+
 int main()
 {
 
 	vector<tuple<double, double, double>> tvx;
-	double h = 0.001;
+	vector<pair<double, double>> tx;
+	double h = 0.01;
 
 	//tvx = EilerMeth(h);
 	//Outfile("EilerMethod", tvx, h);
@@ -202,8 +271,11 @@ int main()
 	//tvx = AdamsMethod(h);
 	//Outfile("AdamsMethod", tvx, h);
 
-	tvx = RungeKuttMethod(h);
-	Outfile("RKMethod", tvx, h);
+	//tvx = RungeKuttMethod(h);
+	//Outfile("RKMethod", tvx, h);
 	//Outcmd(tvx);
+
+	tx = FiniteDifferenceMethod(h, 0, 1);
+	//Outfile("RKMethod", tvx, h);
 	return 0;
 }
