@@ -89,6 +89,16 @@ void Outfile(string Name, vector<tuple<double, double, double>> tvx, double h)
 	output2.close();
 	output3.close();
 }
+void OutfileTX(string Name, vector<pair<double, double>> tx, double h)
+{
+	string filename = "Ex4H_" + Name + to_string(float(h)) + ".txt";
+	ofstream output(filename);
+	for (int i = 0; i < tx.size(); i++)
+	{
+		output << tx[i].first << " " << tx[i].second << endl;
+	}
+	output.close();
+}
 vector<tuple<double, double, double>> EilerRungeMeth(double h)
 {
 	double q1 = 0.5;
@@ -276,6 +286,6 @@ int main()
 	//Outcmd(tvx);
 
 	tx = FiniteDifferenceMethod(h, 0, 1);
-	//Outfile("RKMethod", tvx, h);
+	OutfileTX("RKMethod", tx, h);
 	return 0;
 }
