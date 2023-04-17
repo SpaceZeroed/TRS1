@@ -195,9 +195,9 @@ vector <double> Diag3Prog(vector<vector<double>> matrix, vector<double> f)
 {
 	int n = f.size();
 
-	vector <double> x(n + 1, { 0 });
-	vector <double> psi(n + 1, { 0 });
-	vector <double> ksi(n + 1, { 0 });
+	vector <double> x(n, { 0 });
+	vector <double> psi(n, { 0 });
+	vector <double> ksi(n, { 0 });
 	double a, b, c;
 	// a - b + c = d
 	b = -matrix[0][0]; c = matrix[0][1];
@@ -207,12 +207,13 @@ vector <double> Diag3Prog(vector<vector<double>> matrix, vector<double> f)
 	for (int i = 1; i < n - 1; i++) // прямой ход 
 	{
 		a = matrix[i][i - 1]; b = -matrix[i][i]; c = matrix[i][i + 1];
-		psi[i + 1] = -c / (a * psi[i] - b);
+		psi[i + 1] = - (double)c / (a * psi[i] - b);
 		ksi[i + 1] = (f[i] - a * ksi[i]) / (a * psi[i] - b);
 	}
-	x[n] = ksi[n];
-	for (int i = n; i > 0; i--) // обратный ход 
+	x[n-1] = ksi[n-1];
+	for (int i = n-1; i > 0; i--) // обратный ход 
 	{
+		cout << ksi[i] << " " << psi[i] << endl;
 		x[i - 1] = psi[i] * x[i] + ksi[i];
 	}
 	return x;
@@ -248,6 +249,9 @@ vector<pair<double, double>> FiniteDifferenceMethod(double h, double a, double b
 	for (int i = 0; i < n_big; i++)
 		tx.push_back(make_pair(a + h * i, u[i] ));
 	//PrintMatrix(matrix_prog);
+	cout << matrix_prog[0][0] << " " << matrix_prog[0][1] << endl;
+	cout << matrix_prog[n_big - 2][n_big - 3] << " " << matrix_prog[n_big - 2][n_big - 2] << " " << matrix_prog[n_big - 2][n_big - 1] << endl;
+	cout << matrix_prog[n_big - 1][n_big - 2] << " " <<  matrix_prog[n_big - 1][n_big - 1] << endl;
 	return tx;
 }
 
