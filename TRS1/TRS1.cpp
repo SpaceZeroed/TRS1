@@ -217,14 +217,15 @@ vector <double> Diag3Prog(vector<vector<double>> matrix, vector<double> f)
 	vector <double> x(n + 1, { 0 });
 	vector <double> psi(n + 1, { 0 });
 	vector <double> ksi(n + 1, { 0 });
-
-	double b = -matrix[0][0]; double c = matrix[0][1];
+	double a, b, c;
+	// a - b + c = d
+	b = -matrix[0][0]; c = matrix[0][1];
 	psi[1] = -c / (0 * psi[0] - b);
 	ksi[1] = (f[0] - 0 * ksi[0]) / (0 * psi[0] - b);
 
 	for (int i = 1; i < n - 2; i++) // прямой ход 
 	{
-		double a = matrix[i][i - 1]; double b = -matrix[i][i]; double c = matrix[i][i + 1];
+		a = matrix[i][i - 1]; b = -matrix[i][i]; c = matrix[i][i + 1];
 		psi[i + 1] = -c / (a * psi[i] - b);
 		ksi[i + 1] = (f[i] - a * ksi[i]) / (a * psi[i] - b);
 	}
@@ -243,28 +244,28 @@ vector<pair<double, double>> FiniteDifferenceMethod(double h, double a, double b
 	for (int i = 0; i < n_big; i++)
 		matrix_prog[i].resize(n_big);
 
-	matrix_prog[0][0] = -1 / h;
-	matrix_prog[0][1] = 1 / h;
+	matrix_prog[0][0] = -1./h;
+	matrix_prog[0][1] = 1./h;
 	for (int i = 1; i <= n_big - 2; i++)
 	{
 		matrix_prog[i][i - 1] = 2 - h * p;
-		matrix_prog[i][i] = -4 + q * 2 * h * h;
+		matrix_prog[i][i] = -(4 - q * 2 * h * h);
 		matrix_prog[i][i + 1] = 2 + h * p;
 	}
-	matrix_prog[n_big - 1][n_big - 1] = 1 / h + 1;
-	matrix_prog[n_big - 1][n_big - 2] = -1 / h;
+	matrix_prog[n_big - 1][n_big - 1] = h + 1;
+	matrix_prog[n_big - 1][n_big - 2] = - h;
 
 	vector<double> f;
 	f.resize(n_big);
-	f[0] = 2; f[n_big - 1] = 2;
+	f[0] = 2  ; f[n_big - 1] = 2./h;
 	for (int i = 1; i < n_big - 1; i++)
 	{
-		f[i] = boundcondf(a + i * h);
+		f[i] = 2 * h * h * boundcondf(a + i * h);
 	}
 	vector<double> u = Diag3Prog(matrix_prog, f);
 	for (int i = 0; i < n_big; i++)
 		tx.push_back(make_pair(a + h * i, u[i]));
-	//PrintMatrix(matrix_prog);
+	PrintMatrix(matrix_prog);
 	return tx;
 }
 
@@ -337,7 +338,7 @@ double find_p(double n)
 }
 void Ex5()
 {
-	ofstream Ex5("Ex5_xuv");
+	ofstream Ex5("Ex5_xuv.txt");
 	vector<pair<double, double>> tx;
 	double p = find_p(1000);
 	double  n = 1000;
@@ -393,9 +394,9 @@ int main()
 	//Outfile("RKMethod", tvx, h);
 	//Outcmd(tvx);
 
-	//tx = FiniteDifferenceMethod(h, 0, 1);
-	//OutfileTX("RKMethod", tx, h);
+	tx = FiniteDifferenceMethod(h, 0, 1);
+	OutfileTX("RKMethod", tx, h);
 
-	Ex5();
+	//Ex5();
 	return 0;
 }
