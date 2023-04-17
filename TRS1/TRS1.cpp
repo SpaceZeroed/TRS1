@@ -268,6 +268,114 @@ vector<pair<double, double>> FiniteDifferenceMethod(double h, double a, double b
 	return tx;
 }
 
+double F(double v)
+{
+	return v;
+}
+
+double G( double x,double v)
+{
+	return pow(exp(x*x + x - 3), x) + v;
+}
+
+double RK4(double p, double n)
+{
+	using namespace var9;
+	double k0, k1, k2, k3, m0, m1, m2, m3;
+	double h = 1. / n;
+	double x_0, v_0, u_n, v_n, u_0;
+	
+	x_0 = 0;
+	u_0 = p;
+	v_0 = 2;
+	k0 = F(v_0) * h;
+	m0 = G(x_0, v_0) * h; 
+	k1 = F(v_0 + m0/2) * h;
+	m1 = G(x_0 + h / 2, v_0 + m0 / 2) * h;
+	k2 = F(v_0 + m1 / 2) * h;
+	m2 = G(x_0 + h / 2, v_0 + m1 / 2) * h;
+	k3 = F(v_0 + m2) * h;
+	m3 = G(x_0 + h, v_0 + m2) * h;
+	for (int i = 0; i < n; i++)
+	{
+		x_0 = i * h;
+		u_n = u_0 + (k0 + k1 + k2 + k3) / 6;
+		v_n = v_0 + (m0 + m1 + m2 + m3) / 6;
+		u_0 = u_n;
+		v_0 = v_n;
+		k0 = F(v_0) * h;
+		m0 = G(x_0, v_0) * h;
+		k1 = F(v_0 + m0 / 2) * h;
+		m1 = G(x_0 + h / 2, v_0 + m0 / 2) * h;
+		k2 = F(v_0 + m1 / 2) * h;
+		m2 = G(x_0 + h / 2, v_0 + m1 / 2) * h;
+		k3 = F(v_0 + m2) * h;
+		m3 = G(x_0 + h, v_0 + m2) * h;
+	}
+	
+	return (u_0 + v_0);
+}
+double find_p(double n)
+{
+	double p1 = 10;
+	double p2 = -10.;
+	double p = (p2 - p1) / 2.;
+	while (RK4(p1, n) - 2 > 1e-10)
+	{
+		cout << p;
+		p = (p2 + p1) / 2.;
+		if ((RK4(p1, n) - 2) * (RK4(p, n) - 2) < 0)
+		{
+			p2 = p;
+		}
+		else if ((RK4(p, n) - 2 ) * (RK4(p2, n) - 2 ) < 0)
+		{
+			p1 = p;
+		}
+	}
+	return p1;
+}
+void Ex5()
+{
+	ofstream Ex5("Ex5_xuv");
+	vector<pair<double, double>> tx;
+	double p = find_p(1000);
+	double  n = 1000;
+	using namespace var9;
+	double k0, k1, k2, k3, m0, m1, m2, m3;
+	double h = 1. / n;
+	double x_0, v_0, u_n, v_n, u_0;
+	x_0 = 0;
+	u_0 = p;
+	v_0 = 2;
+	Ex5 << x_0 << " " << u_0 << endl;
+	k0 = F(v_0) * h;
+	m0 = G(x_0, v_0) * h;
+	k1 = F(v_0 + m0 / 2) * h;
+	m1 = G(x_0 + h / 2, v_0 + m0 / 2) * h;
+	k2 = F(v_0 + m1 / 2) * h;
+	m2 = G(x_0 + h / 2, v_0 + m1 / 2) * h;
+	k3 = F(v_0 + m2) * h;
+	m3 = G(x_0 + h, v_0 + m2) * h;
+	for (int i = 0; i < n; i++)
+	{
+		x_0 = i * h;
+		u_n = u_0 + (k0 + k1 + k2 + k3) / 6;
+		v_n = v_0 + (m0 + m1 + m2 + m3) / 6;
+		u_0 = u_n;
+		v_0 = v_n;
+		Ex5 << x_0 << " " << u_0 << endl;
+		k0 = F(v_0) * h;
+		m0 = G(x_0, v_0) * h;
+		k1 = F(v_0 + m0 / 2) * h;
+		m1 = G(x_0 + h / 2, v_0 + m0 / 2) * h;
+		k2 = F(v_0 + m1 / 2) * h;
+		m2 = G(x_0 + h / 2, v_0 + m1 / 2) * h;
+		k3 = F(v_0 + m2) * h;
+		m3 = G(x_0 + h, v_0 + m2) * h;
+	}
+	Ex5.close();
+}
 int main()
 {
 
@@ -285,7 +393,9 @@ int main()
 	//Outfile("RKMethod", tvx, h);
 	//Outcmd(tvx);
 
-	tx = FiniteDifferenceMethod(h, 0, 1);
-	OutfileTX("RKMethod", tx, h);
+	//tx = FiniteDifferenceMethod(h, 0, 1);
+	//OutfileTX("RKMethod", tx, h);
+
+	Ex5();
 	return 0;
 }
