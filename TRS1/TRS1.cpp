@@ -28,14 +28,18 @@ namespace var9
 	double a1 = 1;
 	double b0 = 1;
 	double b1 = 1;
-	double p = -2;
-	double q = 0;
-	double boundcondf(double x)
+	inline double boundcondf(double x)
 	{
 		return exp(x) * (x * x + x - 3);
 	}
-	double A = 2;
-	double B = 2;
+	inline double p(double x)
+	{
+		return -2.;
+	}
+	inline double q(double x)
+	{
+		return 0.;
+	}
 }
 using namespace std;
 using namespace var9;
@@ -191,67 +195,54 @@ void PrintMatrix(vector<vector<double>> Matrix)
 	cout << "-------------------------------------------------------------" << endl;
 }
 
-vector <double> Diag3Prog(vector<vector<double>> matrix, vector<double> f)
+vector <double> Diag3Prog(vector<double> a, vector<double> b, vector<double> c , vector<double> f , int N)
 {
-	int n = f.size();
-
-	vector <double> x(n, { 0 });
-	vector <double> psi(n, { 0 });
-	vector <double> ksi(n, { 0 });
-	double a, b, c;
+	vector <double> y(N, { 0 });
+	vector <double> xi(N + 1, { 0. });
+	vector <double> eta(N + 1, { 0. });
 	// a - b + c = d
-	b = -matrix[0][0]; c = matrix[0][1];
-	psi[1] = -c / (0 * psi[0] - b);
-	ksi[1] = (f[0] - 0 * ksi[0]) / (0 * psi[0] - b);
-
-	for (int i = 1; i < n - 1; i++) // прямой ход 
+	for (int i = 0; i < N; i++) // прямой ход 
 	{
-		a = matrix[i][i - 1]; b = -matrix[i][i]; c = matrix[i][i + 1];
-		psi[i + 1] = - (double)c / (a * psi[i] - b);
-		ksi[i + 1] = (f[i] - a * ksi[i]) / (a * psi[i] - b);
+		xi[i + 1] = -c[i] / (a[i] * xi[i] + b[i]);
+		eta[i + 1] = (f[i] - eta[i] * a[i]) / (a[i] * xi[i] + b[i]);
 	}
-	x[n-1] = ksi[n-1];
-	for (int i = n-1; i > 0; i--) // обратный ход 
+	y[N - 1] = eta[N];
+	for (int i = N - 1; i > 0; i--) // обратный ход 
 	{
-		cout << ksi[i] << " " << psi[i] << endl;
-		x[i - 1] = psi[i] * x[i] + ksi[i];
+		y[i - 1] = xi[i] * y[i] + eta[i];
 	}
-	return x;
+	return y;
 }
-vector<pair<double, double>> FiniteDifferenceMethod(double h, double a, double b)
+vector<pair<double, double>> FiniteDifferenceMethod(double N, double start_point, double end_point)
 {
-	int n_big = int((b - a) / h);
+	double alpha_n = 0., beta_n = 1., gamma = 1., delta = 1., A = 2., B = 2.;
+	double h = (end_point - start_point) / N;
+
 	vector<pair<double, double>> tx;
-	vector<vector<double>> matrix_prog;
-	matrix_prog.resize(n_big);
-	for (int i = 0; i < n_big; i++)
-		matrix_prog[i].resize(n_big);
-
-	matrix_prog[0][0] = -1.;
-	matrix_prog[0][1] = 1.;
-	for (int i = 1; i <= n_big - 2; i++)
+	vector <double> a(N, { 0 });
+	vector <double> b(N, { 0 });
+	vector <double> c(N, { 0 });
+	vector <double> d(N, { 0 });
+	
+	a[0] = 0.;
+	b[0] = alpha_n - beta_n / h;
+	c[0] = beta_n / h;
+	d[0] = A;
+	for (int i = 1; i < N - 1; i++)
 	{
-		matrix_prog[i][i - 1] = 2.- h * p;
-		matrix_prog[i][i] = -(4. - q * 2 * h * h);
-		matrix_prog[i][i + 1] = 2. + h * p;
+		a[i] = 1. / (h * h) - p(i * h) / (2. * h);
+		b[i] = q(i * h) - 2. / (h * h);
+		c[i] = 1. / (h * h) + p(i * h) / (2 * h);
+		d[i] = boundcondf(i * h);
 	}
-	matrix_prog[n_big - 1][n_big - 1] = h + 1.;
-	matrix_prog[n_big - 1][n_big - 2] = - 1.;
+	a[N - 1] = -delta / h;
+	b[N - 1] = gamma + delta / h;
+	c[N - 1] = 0.;
+	d[N - 1] = B;
 
-	vector<double> f;
-	f.resize(n_big);
-	f[0] = 2*h ; f[n_big - 1] = 2 * h;
-	for (int i = 1; i < n_big - 1; i++)
-	{
-		f[i] = 2 * h * h * boundcondf(a + i * h);
-	}
-	vector<double> u = Diag3Prog(matrix_prog, f);
-	for (int i = 0; i < n_big; i++)
-		tx.push_back(make_pair(a + h * i, u[i] ));
-	//PrintMatrix(matrix_prog);
-	cout << matrix_prog[0][0] << " " << matrix_prog[0][1] << endl;
-	cout << matrix_prog[n_big - 2][n_big - 3] << " " << matrix_prog[n_big - 2][n_big - 2] << " " << matrix_prog[n_big - 2][n_big - 1] << endl;
-	cout << matrix_prog[n_big - 1][n_big - 2] << " " <<  matrix_prog[n_big - 1][n_big - 1] << endl;
+	vector<double> y = Diag3Prog(a, b, c, d, N);
+	for (int i = 0; i < N; i++)
+		tx.push_back(make_pair(start_point + h * i, y[i] ));
 	return tx;
 }
 
@@ -380,7 +371,7 @@ int main()
 	//Outfile("RKMethod", tvx, h);
 	//Outcmd(tvx);
 
-	tx = FiniteDifferenceMethod(h, 0, 1);
+	tx = FiniteDifferenceMethod(250, 0, 1);
 	OutfileTX("RKMethod", tx, h);
 
 	//Ex5();
