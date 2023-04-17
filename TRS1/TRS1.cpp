@@ -139,26 +139,7 @@ vector<tuple<double, double, double>> AdamsMethod(double h)
 	}
 	return tvx;
 }
-vector<tuple<double, double, double>> RungeKutty(double h)
-{
-	using namespace var9;
-	vector<tuple<double, double, double>> tvx;
-	double t = 0;
-	tvx.push_back(make_tuple(t, v0, x0));
-	while (t < 10)
-	{
-		double tempV, tempX;
-		double xn, vn, tn, k_11, k_12, k_13, k_14, k_21, k_22, k_23, k_24;
-		tie(tn, vn, xn) = tvx[tvx.size() - 1];
-		k_11 = vn; k_12 = vn + k_11 * h; k_13 = vn + k_12 * h; k_14 = vn + k_13 * h;
-		k_21 = alpha * f(xn); k_22 = alpha * f(xn + k_21 * h / 2); k_23 = alpha * f(xn + k_22 * h / 2); k_24 = alpha * f(xn + k_23 * h);
-		tempX = xn + (k_11 + 2 * k_12 + 2 * k_13 + k_14) * h / 6;
-		tempV = vn + (k_21 + 2 * k_22 + 2 * k_23 + k_24) * h / 6;
-		t += h;
-		tvx.push_back(make_tuple(t, tempV, tempX));
-	}
-	return tvx;
-}
+
 vector<tuple<double, double, double>> RungeKuttMethod(double h)
 {
 	vector<tuple<double, double, double>> tvx;
@@ -223,12 +204,13 @@ vector <double> Diag3Prog(vector<vector<double>> matrix, vector<double> f)
 	psi[1] = -c / (0 * psi[0] - b);
 	ksi[1] = (f[0] - 0 * ksi[0]) / (0 * psi[0] - b);
 
-	for (int i = 1; i < n - 2; i++) // прямой ход 
+	for (int i = 1; i < n - 1; i++) // прямой ход 
 	{
 		a = matrix[i][i - 1]; b = -matrix[i][i]; c = matrix[i][i + 1];
 		psi[i + 1] = -c / (a * psi[i] - b);
 		ksi[i + 1] = (f[i] - a * ksi[i]) / (a * psi[i] - b);
 	}
+	x[n] = ksi[n];
 	for (int i = n; i > 0; i--) // обратный ход 
 	{
 		x[i - 1] = psi[i] * x[i] + ksi[i];
@@ -244,28 +226,28 @@ vector<pair<double, double>> FiniteDifferenceMethod(double h, double a, double b
 	for (int i = 0; i < n_big; i++)
 		matrix_prog[i].resize(n_big);
 
-	matrix_prog[0][0] = -1./h;
-	matrix_prog[0][1] = 1./h;
+	matrix_prog[0][0] = -1.;
+	matrix_prog[0][1] = 1.;
 	for (int i = 1; i <= n_big - 2; i++)
 	{
-		matrix_prog[i][i - 1] = 2 - h * p;
-		matrix_prog[i][i] = -(4 - q * 2 * h * h);
-		matrix_prog[i][i + 1] = 2 + h * p;
+		matrix_prog[i][i - 1] = 2.- h * p;
+		matrix_prog[i][i] = -(4. - q * 2 * h * h);
+		matrix_prog[i][i + 1] = 2. + h * p;
 	}
-	matrix_prog[n_big - 1][n_big - 1] = h + 1;
-	matrix_prog[n_big - 1][n_big - 2] = - h;
+	matrix_prog[n_big - 1][n_big - 1] = h + 1.;
+	matrix_prog[n_big - 1][n_big - 2] = - 1.;
 
 	vector<double> f;
 	f.resize(n_big);
-	f[0] = 2  ; f[n_big - 1] = 2./h;
+	f[0] = 2*h ; f[n_big - 1] = 2 * h;
 	for (int i = 1; i < n_big - 1; i++)
 	{
 		f[i] = 2 * h * h * boundcondf(a + i * h);
 	}
 	vector<double> u = Diag3Prog(matrix_prog, f);
 	for (int i = 0; i < n_big; i++)
-		tx.push_back(make_pair(a + h * i, u[i]));
-	PrintMatrix(matrix_prog);
+		tx.push_back(make_pair(a + h * i, u[i] ));
+	//PrintMatrix(matrix_prog);
 	return tx;
 }
 
@@ -382,7 +364,7 @@ int main()
 
 	vector<tuple<double, double, double>> tvx;
 	vector<pair<double, double>> tx;
-	double h = 0.01;
+	double h = 0.001;
 
 	//tvx = EilerMeth(h);
 	//Outfile("EilerMethod", tvx, h);
